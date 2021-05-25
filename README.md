@@ -1,2 +1,2 @@
-# oracle_vs_hbase
+# Oracle vs HBase
 Application to compare speed between Oracle and HBase
