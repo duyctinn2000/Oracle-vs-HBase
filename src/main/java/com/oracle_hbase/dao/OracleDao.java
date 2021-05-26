@@ -42,8 +42,8 @@ public class OracleDao {
 		cs = conn.prepareCall(putWord);
 	}
 	public static void putWord(String word, int stt) throws SQLException {
-		cs.setString(1, word);
-		cs.setInt(2, stt);
+		cs.setInt(1, stt);
+		cs.setString(2, word);
 		cs.execute();
 	}
 	public static void closeConnectionfordeleteWord() throws SQLException {

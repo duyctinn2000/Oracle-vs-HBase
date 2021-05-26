@@ -59,6 +59,7 @@ public class Delete extends HttpServlet {
 				e1.printStackTrace();
 			}
 		    long stop_setup = System.nanoTime();
+		    int stt=0;
 		    long start_load = System.nanoTime();
 		    while(reader.ready()) {
 		        String line = reader.readLine();
@@ -66,6 +67,7 @@ public class Delete extends HttpServlet {
 		        	break;
 		        try {
 					OracleDao.deleteWord(line);
+					stt = stt + 1;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -78,8 +80,9 @@ public class Delete extends HttpServlet {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		    float setup_time = (stop_setup - start_setup)/1000000000;
-		    float load_time = (stop_load - start_load)/1000000000;
+		    double setup_time = (stop_setup - start_setup)/1000000000.0;
+		    double load_time = (stop_load - start_load)/1000000000.0;
+		    request.setAttribute("total_words","Tổng số từ đã xoá thành công là: " + Integer.toString(stt));
 		    request.setAttribute("load_time","Thời gian xóa dữ liệu ra khỏi Oracle là: " + String.format("%.5f", load_time) + " s");
 		    request.setAttribute("setup_time","Thời gian thiết lập kết nối với Oracle là: " + String.format("%.5f", setup_time) + " s");
 	        RequestDispatcher rd=request.getRequestDispatcher("delete");
@@ -94,16 +97,18 @@ public class Delete extends HttpServlet {
 	    	long start_load = System.nanoTime();
 	    	int stt=0;
 		    while(reader.ready()) {
-		    	stt = stt + 1;
 		        String line = reader.readLine();
 		        if (line.contentEquals("") == true) 
 		        	break;
-		        HBaseDao.deleteWord(line);
+		    	stt = stt + 1;
+		        //HBaseDao.deleteWord(line);
+		    	HBaseDao.deleteWord_col(line);
 		    }
 		    long stop_load = System.nanoTime();
 		    HBaseDao.closeConnection();
 		    double setup_time = (stop_setup - start_setup)/1000000000.0;
 		    double load_time = (stop_load - start_load)/1000000000.0;
+		    request.setAttribute("total_words","Tổng số từ đã xóa thành công là: " + Integer.toString(stt));
 		    request.setAttribute("load_time","Thời gian xóa dữ liệu ra khỏi HBase là: " + String.format("%.5f", load_time) + " s");
 		    request.setAttribute("setup_time","Thời gian thiết lập kết nối với HBase là: " + String.format("%.5f", setup_time) + " s");
 	        RequestDispatcher rd=request.getRequestDispatcher("delete");

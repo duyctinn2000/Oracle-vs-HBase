@@ -54,11 +54,11 @@ public class Load extends HttpServlet {
 		    long start_load = System.nanoTime();
 		    int stt=0;
 		    while(reader.ready()) {
-		    	stt=stt+1;
 		        String line = reader.readLine();
 		        if (line.contentEquals("") == true) 
 		        	break;
 		        try {
+		        	stt=stt+1;
 					OracleDao.putWord(line,stt);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -72,8 +72,9 @@ public class Load extends HttpServlet {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		    float setup_time = (stop_setup - start_setup)/1000000000;
-		    float load_time = (stop_load - start_load)/1000000000;
+		    double setup_time = (stop_setup - start_setup)/1000000000.0;
+		    double load_time = (stop_load - start_load)/1000000000.0;
+		    request.setAttribute("total_words","Tổng số từ đã tải lên thành công là: " + Integer.toString(stt));
 		    request.setAttribute("load_time","Thời gian tải dữ liệu lên Oracle là: " + String.format("%.5f", load_time) + " s");
 		    request.setAttribute("setup_time","Thời gian thiết lập kết nối với Oracle là: " + String.format("%.5f", setup_time) + " s");
 	        RequestDispatcher rd=request.getRequestDispatcher("load");
@@ -88,16 +89,18 @@ public class Load extends HttpServlet {
 	    	long start_load = System.nanoTime();
 	    	int stt=0;
 		    while(reader.ready()) {
-		    	stt = stt + 1;
 		        String line = reader.readLine();
 		        if (line.contentEquals("") == true) 
 		        	break;
-		        HBaseDao.putWord(line,stt);
+		    	stt = stt + 1;
+		        //HBaseDao.putWord(line,stt);
+		    	HBaseDao.putWord_col(line, stt);
 		    }
 		    long stop_load = System.nanoTime();
 		    HBaseDao.closeConnection();
 		    double setup_time = (stop_setup - start_setup)/1000000000.0;
 		    double load_time = (stop_load - start_load)/1000000000.0;
+		    request.setAttribute("total_words","Tổng số từ đã tải lên thành công là: " + Integer.toString(stt));
 		    request.setAttribute("load_time","Thời gian tải dữ liệu lên HBase là: " + String.format("%.5f", load_time) + " s");
 		    request.setAttribute("setup_time","Thời gian thiết lập kết nối với HBase là: " + String.format("%.5f", setup_time) + " s");
 	        RequestDispatcher rd=request.getRequestDispatcher("load");

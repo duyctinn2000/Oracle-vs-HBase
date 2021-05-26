@@ -112,6 +112,9 @@
                         </form>
                     </div>
                     <div class="col-lg-10">
+                   		 <div class="form-group row">			
+                     	  		<label class="col-form-label" for="total_words">${total_words}</label> 
+                           </div>
                      	  <div class="form-group row">
                      	  		<label class="col-form-label" for="search_time">${setup_time}</label> 
                            </div>

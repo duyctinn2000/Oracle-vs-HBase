@@ -36,7 +36,7 @@
 <!-- Breadcrumb Section End -->
 <c:import url="/header.jsp">
     <c:param name="navbar_opt" value="1"/>
-    <c:param name="title" value="Up Load"/>
+    <c:param name="title" value="Delete"/>
 </c:import>
 <!-- Profile Section Begin -->
 
@@ -112,6 +112,9 @@
                         </form>
                     </div>
                     <div class="col-lg-10">
+                    		<div class="form-group row">			
+                     	  		<label class="col-form-label" for="total_words">${total_words}</label> 
+                           </div>
                      	  <div class="form-group row">
                      	  		<label class="col-form-label" for="search_time">${setup_time}</label> 
                            </div>

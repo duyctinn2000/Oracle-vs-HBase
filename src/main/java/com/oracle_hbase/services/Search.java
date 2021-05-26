@@ -41,7 +41,7 @@ public class Search extends HttpServlet {
 				long start = System.nanoTime();
 				List<Oracle> word_list = OracleDao.getWord(word_in);
 				long end = System.nanoTime();
-			    float elapsedTime = (end - start)/1000000000;
+				double elapsedTime = (end - start)/1000000000.0;
 			    request.setAttribute("search_time","Thời gian tìm kiếm trong Oracle là: " + String.format("%.5f", elapsedTime) + " s");
 				request.setAttribute("word_list", word_list);
 				request.setAttribute("word", word_in);
@@ -56,7 +56,8 @@ public class Search extends HttpServlet {
 		} else {
 			HBaseDao.createConnection();
 			long start = System.nanoTime();
-			List<HBase> word_list = HBaseDao.getWord(word_in);
+			//List<HBase> word_list = HBaseDao.getWord(word_in);
+			List<HBase> word_list = HBaseDao.getWord_col(word_in);
 			long end = System.nanoTime();
 		    double elapsedTime = (end - start)/1000000000.0;
 		    request.setAttribute("search_time","Thời gian tìm kiếm trong HBase là: " + String.format("%.5f", elapsedTime) + " s");

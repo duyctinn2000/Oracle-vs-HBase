@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.CompareOperator;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
@@ -16,6 +17,9 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.BinaryPrefixComparator;
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+import org.apache.hadoop.hbase.filter.SubstringComparator;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.oracle_hbase.model.HBase;
@@ -48,9 +52,56 @@ public class HBaseDao {
 		table.delete(delete);
 	}
 	
+	public static void putWord_col(String word, int s) throws IOException {		
+		Put	put = new Put(Bytes.toBytes(Integer.toString(s)));
+	   	put.addColumn(Bytes.toBytes("wordlist"),Bytes.toBytes("word"),Bytes.toBytes(word));
+		table.put(put);
+	}
+	
+	public static void deleteWord_col(String word) throws IOException {		
+		Scan scan = new Scan();
+		SingleColumnValueFilter filter = new SingleColumnValueFilter(Bytes.toBytes("wordlist"), Bytes.toBytes("word"), CompareOperator.EQUAL, Bytes.toBytes(word));
+		scan.setFilter(filter);
+		ResultScanner rs = table.getScanner(scan);
+		try {
+		  for (Result r = rs.next(); r != null; r = rs.next()) {
+			String stt_out = Bytes.toString(r.getRow());
+			Delete	delete = new Delete(Bytes.toBytes(stt_out));
+			table.delete(delete);
+		  }
+		} finally {
+		  rs.close();  // always close the ResultScanner!
+		}
+	}
+	
 	public static void closeConnection() throws IOException {
 		table.close();
 		connection.close();
+	}
+	
+	public static List<HBase> getWord_col(String word_in) throws IOException {
+		List<HBase> list = new ArrayList<>();
+		Scan scan = new Scan();
+		scan.addColumn(Bytes.toBytes("wordlist"),Bytes.toBytes("word"));
+		BinaryPrefixComparator comp = new BinaryPrefixComparator(word_in.getBytes()); 
+		String string = new String(comp.toByteArray());
+		SingleColumnValueFilter f = new SingleColumnValueFilter(Bytes.toBytes("wordlist"),Bytes.toBytes("word"),CompareOperator.EQUAL, comp);
+		scan.setFilter(f);
+		ResultScanner rs = table.getScanner(scan);
+		try {
+		  for (Result r = rs.next(); r != null; r = rs.next()) {
+			String stt_out = Bytes.toString(r.getRow());
+			String word_out = Bytes.toString(r.getValue("wordlist".getBytes(), "word".getBytes()));
+			HBase new_hbase = new HBase();
+			new_hbase.set_enWord(word_out);
+			new_hbase.setStt(stt_out);
+			list.add(new_hbase);
+		  }
+		} finally {
+		  rs.close();  // always close the ResultScanner!
+		}
+		return list;
+		
 	}
 	
 	public static List<HBase> getWord(String word_in) throws IOException {
@@ -72,6 +123,5 @@ public class HBaseDao {
 		  rs.close();  // always close the ResultScanner!
 		}
 		return list;
-		
 	}
 }
