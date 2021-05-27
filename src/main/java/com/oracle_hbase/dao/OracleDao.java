@@ -31,7 +31,7 @@ public class OracleDao {
 	final private static String oraclePass="duy_oracle";
 	private static final String putWord = "BEGIN PUT_WORD(?,?); END;";
 	private static final String deleteWord = "BEGIN DELETE_WORD(?); END;";
-	private static final String getWord = "select WORD, stt from DICTIONARY where WORD LIKE ?";
+	private static final String getWord = "select stt, WORD from DICTIONARY where WORD LIKE ?";
 	private static Connection conn;
 	private static CallableStatement cs;
 	
@@ -41,29 +41,36 @@ public class OracleDao {
 		conn = DriverManager.getConnection(oracleURL,oracleUsername,oraclePass);
 		cs = conn.prepareCall(putWord);
 	}
+	
 	public static void putWord(String word, int stt) throws SQLException {
 		cs.setInt(1, stt);
 		cs.setString(2, word);
 		cs.execute();
 	}
-	public static void closeConnectionfordeleteWord() throws SQLException {
+	
+	public static void closeConnectionforputWord() throws SQLException {
 		cs.close();
 		conn.close();
 	}
+	
+	
 	
 	public static void createConnectionfordeleteWord() throws ClassNotFoundException, SQLException {
 		Class.forName(driverName);
 		conn = DriverManager.getConnection(oracleURL,oracleUsername,oraclePass);
 		cs = conn.prepareCall(deleteWord);
 	}
+	
 	public static void deleteWord(String word) throws SQLException {
 		cs.setString(1, word);
 		cs.execute();
 	}
-	public static void closeConnectionforputWord() throws SQLException {
+	
+	public static void closeConnectionfordeleteWord() throws SQLException {
 		cs.close();
 		conn.close();
 	}
+	
 	
 	public static List<Oracle> getWord(String word_in) throws SQLException, IOException {
 		try {
@@ -79,8 +86,8 @@ public class OracleDao {
 		ResultSet rs = ps.executeQuery();
 		List<Oracle> list = new ArrayList<>();
 		while (rs.next()) {
-			String word_out = rs.getString(1);
-			int stt_out = rs.getInt(2);
+			int stt_out = rs.getInt(1);
+			String word_out = rs.getString(2);
 			Oracle new_oracle = new Oracle();
 			new_oracle.set_enWord(word_out);
 			new_oracle.setStt(stt_out);

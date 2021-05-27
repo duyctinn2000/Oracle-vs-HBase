@@ -76,7 +76,7 @@
                 <div class="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1.4s">
                     <div class="box">
                         <div class="icon"><i class="ion-ios-bookmarks-outline" style="color: #e9bf06;"></i></div>
-                        <h4 class="title"><a href="main/search">Tìm kiếm một từ trong Database</a></h4>
+                        <h4 class="title"><a href="main/search">Tìm kiếm từ trong Database</a></h4>
                         <p class="description">Đánh giá tốc độ search</p>
                     </div>
                 </div>

@@ -17,9 +17,9 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.BinaryComparator;
 import org.apache.hadoop.hbase.filter.BinaryPrefixComparator;
-import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
-import org.apache.hadoop.hbase.filter.SubstringComparator;
+import org.apache.hadoop.hbase.filter.ValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.oracle_hbase.model.HBase;
@@ -52,6 +52,27 @@ public class HBaseDao {
 		table.delete(delete);
 	}
 	
+	public static List<HBase> getWord(String word_in) throws IOException {
+		List<HBase> list = new ArrayList<>();
+		Scan scan = new Scan();
+		scan.addColumn(Bytes.toBytes("stt"),Bytes.toBytes("index"));
+		scan.setRowPrefixFilter(Bytes.toBytes(word_in));
+		ResultScanner rs = table.getScanner(scan);
+		try {
+		  for (Result r = rs.next(); r != null; r = rs.next()) {
+			String word_out = Bytes.toString(r.getRow());
+			String stt_out = Bytes.toString(r.getValue("stt".getBytes(), "index".getBytes()));
+			HBase new_hbase = new HBase();
+			new_hbase.set_enWord(word_out);
+			new_hbase.setStt(stt_out);
+			list.add(new_hbase);
+		  }
+		} finally {
+		  rs.close();  // always close the ResultScanner!
+		}
+		return list;
+	}
+	
 	public static void putWord_col(String word, int s) throws IOException {		
 		Put	put = new Put(Bytes.toBytes(Integer.toString(s)));
 	   	put.addColumn(Bytes.toBytes("wordlist"),Bytes.toBytes("word"),Bytes.toBytes(word));
@@ -60,18 +81,16 @@ public class HBaseDao {
 	
 	public static void deleteWord_col(String word) throws IOException {		
 		Scan scan = new Scan();
-		SingleColumnValueFilter filter = new SingleColumnValueFilter(Bytes.toBytes("wordlist"), Bytes.toBytes("word"), CompareOperator.EQUAL, Bytes.toBytes(word));
-		scan.setFilter(filter);
+		scan.setLimit(1);
+		scan.addColumn(Bytes.toBytes("wordlist"), Bytes.toBytes("word"));
+		ValueFilter vf = new ValueFilter(CompareOperator.EQUAL, new BinaryComparator(Bytes.toBytes(word)));
+		scan.setFilter(vf);
 		ResultScanner rs = table.getScanner(scan);
-		try {
-		  for (Result r = rs.next(); r != null; r = rs.next()) {
-			String stt_out = Bytes.toString(r.getRow());
-			Delete	delete = new Delete(Bytes.toBytes(stt_out));
-			table.delete(delete);
-		  }
-		} finally {
-		  rs.close();  // always close the ResultScanner!
-		}
+		Result r = rs.next(); 
+		String stt_out = Bytes.toString(r.getRow());
+		Delete delete = new Delete(Bytes.toBytes(stt_out));
+		table.delete(delete);
+		rs.close();  // always close the ResultScanner
 	}
 	
 	public static void closeConnection() throws IOException {
@@ -82,11 +101,10 @@ public class HBaseDao {
 	public static List<HBase> getWord_col(String word_in) throws IOException {
 		List<HBase> list = new ArrayList<>();
 		Scan scan = new Scan();
-		scan.addColumn(Bytes.toBytes("wordlist"),Bytes.toBytes("word"));
+		scan.addColumn(Bytes.toBytes("wordlist"), Bytes.toBytes("word"));
 		BinaryPrefixComparator comp = new BinaryPrefixComparator(word_in.getBytes()); 
-		String string = new String(comp.toByteArray());
-		SingleColumnValueFilter f = new SingleColumnValueFilter(Bytes.toBytes("wordlist"),Bytes.toBytes("word"),CompareOperator.EQUAL, comp);
-		scan.setFilter(f);
+		ValueFilter vf = new ValueFilter(CompareOperator.EQUAL, comp);
+		scan.setFilter(vf);
 		ResultScanner rs = table.getScanner(scan);
 		try {
 		  for (Result r = rs.next(); r != null; r = rs.next()) {
@@ -103,25 +121,5 @@ public class HBaseDao {
 		return list;
 		
 	}
-	
-	public static List<HBase> getWord(String word_in) throws IOException {
-		List<HBase> list = new ArrayList<>();
-		Scan scan = new Scan();
-		scan.addColumn(Bytes.toBytes("stt"),Bytes.toBytes("index"));
-		scan.setRowPrefixFilter(Bytes.toBytes(word_in));
-		ResultScanner rs = table.getScanner(scan);
-		try {
-		  for (Result r = rs.next(); r != null; r = rs.next()) {
-			String word_out = Bytes.toString(r.getRow());
-			String stt_out = Bytes.toString(r.getValue("stt".getBytes(), "index".getBytes()));;
-			HBase new_hbase = new HBase();
-			new_hbase.set_enWord(word_out);
-			new_hbase.setStt(stt_out);
-			list.add(new_hbase);
-		  }
-		} finally {
-		  rs.close();  // always close the ResultScanner!
-		}
-		return list;
-	}
+
 }
